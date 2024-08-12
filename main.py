@@ -13,14 +13,27 @@ def main():
     ORG_COUNT = 2
     print("Running DB init")
 
-    # Connection details
-    conn = psycopg2.connect(
-        dbname="fxc",
-        user="user",
-        password="password",
-        host="postgres",
-        port="5432"
-    )
+    # Establish a connection to Postgres
+    attempt_count = 0
+    while attempt_count < 10:
+        try:
+            # Connection details
+            conn = psycopg2.connect(
+                dbname="fxc",
+                user="user",
+                password="password",
+                host="postgres",
+                port="5432"
+            )
+            break
+        except psycopg2.OperationalError:
+            attempt_count +=1
+            print(f"reconnecting to postgres, {attempt_count=}")
+            time.sleep(2)
+    else:
+        print("Couldn't connect to postgres")
+        return
+
 
     # Creating a cursor object to interact with the database
     cur = conn.cursor()
