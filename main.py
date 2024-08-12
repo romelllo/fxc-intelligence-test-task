@@ -112,14 +112,8 @@ def main():
         print(f" [x] Sent {message}")
 
     while True:
-        try:
-            publish_message(random.randint(1, ORG_COUNT), random.randint(-1000, 1000))
-            time.sleep(random.randint(30, 80))
-        except e:
-            print(e.__traceback__())
-            return
-        finally:
-            connection.close()
+        publish_message(random.randint(1, ORG_COUNT), random.randint(-1000, 1000))
+        time.sleep(random.randint(10, 40))
 
 if __name__ == "__main__":
     main()

@@ -33,7 +33,7 @@ services:
 
   producer:
     build: .
+    init: true
     depends_on:
       - postgres
       - rabbitmq
-    command: python /app/main.py

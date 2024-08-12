@@ -1,8 +1,19 @@
 # Python app building
 
-Write an application in Python, which interacts with postgres, keydb (Redis) and rabbitmq.
+This repository contains a `docker-compose` which starts up postgres, keydb (Redis), 
+rabbitmq and an example producer app which populates these services with some data.
+
+Your task is to create a separate repo and write an application in Python,
+which interacts with these services.
+
+## Running this application stack
+
+Install `docker-compose` and run with `docker-compose up --build`
 
 ## External services description
+
+Credentials for postgres and rabbitmq: `user:password`. Keydb is configured with
+protected mode disabled, so no credentials needed there.
 
 1. In postgres there are following tables:
 ```
@@ -51,11 +62,9 @@ id pk, provider_id fk, transaction_value
 3, 2, -200
 4, 1, 600
 ```
+
 ## Constraints and conditions
 
 - Only one instance of application is ruining at the same time
 - No other applications are using specified external services
 
-# Running this application stack
-
-Install `docker-compose` and run with `docker-compose up --build`
