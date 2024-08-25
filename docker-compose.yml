@@ -1,39 +1,32 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
+    container_name: fxc_db
     image: postgres:14
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: fxc
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "${FORWARD_DB_PORT:-5432}:5432"
+    networks:
+      - fxc_network
 
-  keydb:
-    image: eqalpha/keydb:latest
-    command: keydb-server --appendonly yes
-    volumes:
-      - ./keydb_data:/data
-    ports:
-      - "6379:6379"
-
-  rabbitmq:
-    image: rabbitmq:3-management
+  app:
+    container_name: fxc_app
+    build:
+      context: .
+    env_file:
+      - .env
     environment:
-      RABBITMQ_DEFAULT_USER: user
-      RABBITMQ_DEFAULT_PASS: password
-    volumes:
-      - ./rabbitmq_data:/var/lib/rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-
-  producer:
-    build: .
-    init: true
+      - PYTHONPATH=/opt/fxc
     depends_on:
       - postgres
-      - rabbitmq
+    networks:
+      - fxc_network
+
+networks:
+  fxc_network:

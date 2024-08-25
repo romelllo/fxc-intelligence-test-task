@@ -1,16 +1,17 @@
 # Use an official Python runtime as a parent image
 FROM python:3.10-slim
+LABEL maintainer="Roman Novikov <romannovikov526@gmail.com>"
 
 # Set the working directory in the container
-WORKDIR /app
+WORKDIR /opt/fxc
 
-# Copy the current directory contents into the container at /app
-COPY . /app
-
+# Copy the requirements.txt file
+COPY requirements.txt .
 # Install the necessary Python packages
-RUN pip install --no-cache-dir psycopg2-binary pika
+RUN pip3 install -r requirements.txt
 
-RUN chmod +x main.py
+# Copy the current directory contents into the container at /opt/fxc
+COPY . .
 
-ENTRYPOINT ["python", "-u", "./main.py"]
+ENTRYPOINT ["python3.10", "-u", "./src/app/main.py"]
 
