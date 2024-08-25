@@ -4,6 +4,7 @@ from tortoise import Tortoise, exceptions
 
 from src.app.db.models import HistoricalTransaction, InitialData
 from src.app.settings import settings
+from src.app.utils import with_retry
 
 logger = logging.getLogger(__name__)
 
@@ -12,32 +13,26 @@ class DatabaseRepository:
     def __init__(self):
         self.db_url = settings.postgresql_url
 
+    @with_retry()
     async def init(self):
-        try:
-            # Initialize Tortoise ORM
-            await Tortoise.init(
-                db_url=self.db_url, modules={"models": ["src.app.db.models"]}
-            )
-            # Generate the schema
-            await Tortoise.generate_schemas()
-            logger.info("Database initialized successfully.")
-        except exceptions.DBConnectionError as e:
-            logger.error(f"Failed to initialize the database: {e}")
-            raise
+        await Tortoise.init(
+            db_url=self.db_url, modules={"models": ["src.app.db.models"]}
+        )
+        # Generate the schema
+        await Tortoise.generate_schemas()
+        logger.info("Database initialized successfully.")
 
+    @with_retry()
     async def insert_initial_data(
         self, provider_name: str, initial_value: float
     ) -> int:
-        try:
-            data = await InitialData.create(
-                provider_name=provider_name, initial_value=initial_value
-            )
-            logger.info(f"Inserted initial data: {provider_name}, {initial_value}")
-            return data.id
-        except exceptions.DBConnectionError as e:
-            logger.error(f"Failed to insert initial data: {e}")
-            raise
+        data = await InitialData.create(
+            provider_name=provider_name, initial_value=initial_value
+        )
+        logger.info(f"Inserted initial data: {provider_name}, {initial_value}")
+        return data.id
 
+    @with_retry()
     async def insert_historical_transaction(
         self,
         provider_id: int,
@@ -57,15 +52,9 @@ class DatabaseRepository:
         except exceptions.DoesNotExist:
             logger.error(f"Provider with ID {provider_id} does not exist.")
             raise
-        except exceptions.DBConnectionError as e:
-            logger.error(f"Failed to insert historical transaction: {e}")
-            raise
 
+    @with_retry()
     async def close(self) -> None:
-        try:
-            # Close the connection
-            await Tortoise.close_connections()
-            logger.info("Database connection closed successfully.")
-        except exceptions.DBConnectionError as e:
-            logger.error(f"Failed to close the database connection: {e}")
-            raise
+        # Close the connection
+        await Tortoise.close_connections()
+        logger.info("Database connection closed successfully.")
