@@ -3,6 +3,7 @@ import logging
 import time
 
 from src.app.db.repository import DatabaseRepository
+from src.app.services.rabbitmq import connect_to_rabbitmq, publish_message
 
 LOGGING_FORMAT = "[%(filename)s:%(lineno)d] | %(levelname)-8s | %(message)s"
 logger = logging.getLogger()
@@ -37,11 +38,13 @@ async def init_db() -> None:
     await repo.close()
 
 
-def main() -> None:
+async def main() -> None:
     configure_logger()
-
-    asyncio.run(init_db())
+    await init_db()
+    channel = await connect_to_rabbitmq()
+    if channel:
+        await publish_message(channel, 1, 100)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
