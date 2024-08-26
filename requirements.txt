@@ -14,6 +14,7 @@ pydantic_core==2.20.1
 pypika-tortoise==0.1.6
 python-dotenv==1.0.1
 pytz==2024.1
+redis==5.0.8
 tortoise-orm==0.21.6
 typing_extensions==4.12.2
 yarl==1.9.4

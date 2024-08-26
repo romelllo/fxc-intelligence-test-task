@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+from typing import Callable
 
 import aio_pika
 
@@ -21,19 +22,25 @@ async def connect_to_rabbitmq() -> aio_pika.RobustChannel:
 
     channel = await connection.channel()
 
-    await channel.declare_queue(settings.RABBITMQ_QUEUE_NAME, durable=True)
-
-    logger.info("Connected to RabbitMQ and declared queue.")
+    logger.info("Connected to RabbitMQ.")
     return channel
 
 
 @with_retry()
-async def publish_message(channel: aio_pika.RobustChannel, id: int, value: int):
-    if not channel or channel.is_closed:
-        logger.error("Cannot publish message, channel is closed.")
-        return
+async def declare_queue(
+    channel: aio_pika.RobustChannel,
+) -> aio_pika.abc.AbstractRobustQueue:
+    queue = await channel.declare_queue(settings.RABBITMQ_QUEUE_NAME, durable=True)
 
-    message = {"id": id, "value": value}
+    logger.info(f"Declared queue: {settings.RABBITMQ_QUEUE_NAME}")
+    return queue
+
+
+@with_retry()
+async def publish_message(
+    channel: aio_pika.RobustChannel, id_: int, value: int
+) -> None:
+    message = {"id": id_, "value": value}
     await channel.default_exchange.publish(
         aio_pika.Message(
             body=json.dumps(message).encode(),
@@ -42,3 +49,13 @@ async def publish_message(channel: aio_pika.RobustChannel, id: int, value: int):
         routing_key=settings.RABBITMQ_QUEUE_NAME,
     )
     logger.info(f" [x] Sent {message}")
+
+
+@with_retry()
+async def consume_messages(
+    queue: aio_pika.abc.AbstractRobustQueue, message_handler: Callable
+) -> None:
+    await queue.consume(message_handler, no_ack=False)
+    logger.info(f"Started consuming messages from {settings.RABBITMQ_QUEUE_NAME}")
+
+    await asyncio.Future()

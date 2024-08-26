@@ -58,3 +58,16 @@ class DatabaseRepository:
         # Close the connection
         await Tortoise.close_connections()
         logger.info("Database connection closed successfully.")
+
+
+async def fill_db(repo: DatabaseRepository) -> None:
+    # asyncio.sleep(10)
+
+    # Insert initial data
+    visa_id = await repo.insert_initial_data("Visa", 1000.00)
+    mastercard_id = await repo.insert_initial_data("Mastercard", 2000.00)
+
+    # Insert historical transactions
+    await repo.insert_historical_transaction(visa_id, 100.00)
+    await repo.insert_historical_transaction(visa_id, 200.00)
+    await repo.insert_historical_transaction(mastercard_id, -200.00)
