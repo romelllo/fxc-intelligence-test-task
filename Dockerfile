@@ -3,7 +3,7 @@ FROM python:3.10-slim
 LABEL maintainer="Roman Novikov <romannovikov526@gmail.com>"
 
 # Set the working directory in the container
-WORKDIR /opt/fxc
+WORKDIR /opt/fxc_app
 
 # Copy the requirements.txt file
 COPY requirements.txt .

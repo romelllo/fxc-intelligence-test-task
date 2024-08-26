@@ -34,7 +34,7 @@ services:
     env_file:
       - .env
     environment:
-      - PYTHONPATH=/opt/fxc
+      - PYTHONPATH=/opt/fxc_app
     depends_on:
       - postgres
       - rabbitmq
