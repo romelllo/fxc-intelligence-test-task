@@ -1,70 +1,60 @@
-# Python app building
+# FXC Intelligence Technical Task
 
-This repository contains a `docker-compose` which starts up postgres, keydb (Redis), 
-rabbitmq and an example producer app which populates these services with some data.
+## Description
 
-Your task is to create a separate repo and write an application in Python,
-which interacts with these services.
+This project is a data processing application that integrates PostgreSQL, RabbitMQ, and KeyDB to manage and process financial transactions. The application performs the following tasks:
 
-## Running this application stack
+1. **Database Initialization**: Connects to a PostgreSQL database and initializes necessary data.
+2. **Message Handling**: Publishes and consumes messages from RabbitMQ queues.
+3. **Data Synchronization**: Updates and synchronizes data in KeyDB based on transactions and initial data from the PostgreSQL database.
 
-Install `docker-compose` and run with `docker-compose up --build`
+## Services
 
-## External services description
+- **PostgreSQL**: A relational database system used for storing initial and historical transaction data.
+- **RabbitMQ**: A message broker used for handling transactional messages.
+- **KeyDB**: A high-performance key-value store used for caching and quick access to aggregated transaction data.
 
-Credentials for postgres and rabbitmq: `user:password`. Keydb is configured with
-protected mode disabled, so no credentials needed there.
+## Requirements
 
-1. In postgres there are following tables:
-```
-historical_transactions
+1. **Python 3.10+**: Ensure Python is installed on your system.
+2. **Docker**: Required for containerizing and running the services.
 
-id pk, provider_id fk, transaction_value
-1, 1, 100
-2, 1, 200
-3, 2, -200
+## Setup
 
-initial_data
+1. **Clone the Repository**
 
-id pk, provider_name, initial_value
-1, Visa, 1000
-2, Mastercard, 2000
-```
-2. Keydb is initially empty, but is expected to have values in the following format:
-```
-key, value
-1_Visa, 1300
-2_Mastercard, 1800
-```
-3. In rabbitmq there is a queue `incoming_transactions`, where incoming txs are sent to. Message format is as follows:
-```
-{
-"id": 1,
-"value": 600
-}
-```
+   ```bash
+   git clone https://github.com/romelllo/fxc-intelligence-test-task.git
+   cd fxc-intelligence-test-task
+   ```
 
-## App logic
+2. **Create and Configure the `.env` File**
 
-Subscribe to rmq queue `incoming_transactions`, read message data, write it to postgres table `historical_transactions`. Each 60s (at 00:00:00, 00:01:00 etc) update current value for each provider in keydb.
+   Copy the example environment file and fill in the required values:
 
-After processing example message, keydb data should look like this:
-```
-key, value
-1_Visa, 1900
-2_Mastercard, 1800
-```
-And `historical_transactions` in postgres:
-```
-id pk, provider_id fk, transaction_value
-1, 1, 100
-2, 1, 200
-3, 2, -200
-4, 1, 600
-```
+   ```bash
+   cp .env.example .env
+   ```
+   Edit the `.env` file to include the actual environment variables.  
 
-## Constraints and conditions
+3. **Build and Run the Services**
 
-- Only one instance of application is ruining at the same time
-- No other applications are using specified external services
+   Use Docker Compose to build and start the services:
 
+   ```bash
+   docker-compose up --build
+   ```
+
+4. **Stopping the Services**
+
+   To stop the services, press `Ctrl+C` in the terminal where Docker Compose is running. This will gracefully shut down all running containers.
+
+5. **Accessing the Services**
+
+   - **PostgreSQL**: Available at `localhost:5432`
+   - **RabbitMQ**: Management interface available at `localhost:15672`
+   - **KeyDB**: Available at `localhost:6379`
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
