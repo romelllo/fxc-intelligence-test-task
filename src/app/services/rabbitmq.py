@@ -22,7 +22,7 @@ async def connect_to_rabbitmq() -> aio_pika.RobustChannel:
 
     channel = await connection.channel()
 
-    logger.info("Connected to RabbitMQ.")
+    logger.info("Connected to RabbitMQ")
     return channel
 
 
@@ -32,7 +32,7 @@ async def declare_queue(
 ) -> aio_pika.abc.AbstractRobustQueue:
     queue = await channel.declare_queue(settings.RABBITMQ_QUEUE_NAME, durable=True)
 
-    logger.info(f"Declared queue: {settings.RABBITMQ_QUEUE_NAME}")
+    logger.info(f"Declared RabbitMQ queue: {settings.RABBITMQ_QUEUE_NAME}")
     return queue
 
 
@@ -48,7 +48,7 @@ async def publish_message(
         ),
         routing_key=settings.RABBITMQ_QUEUE_NAME,
     )
-    logger.info(f" [x] Sent {message}")
+    logger.info(f"Sent {message} to RabbitMQ channel")
 
 
 @with_retry()
@@ -56,6 +56,8 @@ async def consume_messages(
     queue: aio_pika.abc.AbstractRobustQueue, message_handler: Callable
 ) -> None:
     await queue.consume(message_handler, no_ack=False)
-    logger.info(f"Started consuming messages from {settings.RABBITMQ_QUEUE_NAME}")
+    logger.info(
+        f"Started consuming messages from RabbitMQ queue {settings.RABBITMQ_QUEUE_NAME}"
+    )
 
     await asyncio.Future()

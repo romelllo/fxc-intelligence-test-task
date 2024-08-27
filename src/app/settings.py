@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     FORWARD_RABBITMQ_PORT: int = 5672
     RABBITMQ_QUEUE_NAME: str
 
+    KEYDB_HOST: str
+    KEYDB_PORT: int = 6379
+
     @property
     def postgresql_url(self) -> str:
         return (
@@ -21,6 +24,10 @@ class Settings(BaseSettings):
             f"{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:"
             f"{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
+
+    @property
+    def keydb_url(self) -> str:
+        return f"redis://{self.KEYDB_HOST}:{self.KEYDB_PORT}"
 
 
 settings = Settings()
