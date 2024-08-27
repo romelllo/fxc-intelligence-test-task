@@ -5,17 +5,22 @@ import signal
 from functools import partial
 
 from src.app.db.repository import DatabaseRepository, fill_db
-from src.app.services.keydb import init_keydb, keydb_perform_task
+from src.app.services.keydb import init_keydb
 from src.app.services.rabbitmq import (
     connect_to_rabbitmq,
     consume_messages,
     declare_queue,
     publish_message,
 )
-from src.app.services.transactions import fill_keydb, publish_message_to_db
+from src.app.services.transactions import (
+    publish_message_to_db,
+    update_keydb_periodically,
+)
 from src.app.utils import generate_message, shutdown
 
-LOGGING_FORMAT = "[%(filename)s:%(lineno)d] | %(levelname)-8s | %(message)s"
+LOGGING_FORMAT = (
+    "[%(asctime)s] [%(filename)s:%(lineno)d] | %(levelname)-8s | %(message)s"
+)
 logger = logging.getLogger()
 
 
@@ -42,13 +47,17 @@ async def main() -> None:
 
     # Initialize KeyDB
     keydb = await init_keydb()
-    await fill_keydb(keydb, repo, provider_dict)
 
     # Define the message handler
     message_handler = partial(publish_message_to_db, repo)
 
     # Start consuming messages in the background
     consume_task = asyncio.create_task(consume_messages(queue, message_handler))
+
+    # Start KeyDB update task
+    update_keydb_task = asyncio.create_task(
+        update_keydb_periodically(keydb, repo, provider_dict)
+    )
 
     # Register signals for shutdown
     loop = asyncio.get_running_loop()
@@ -72,6 +81,7 @@ async def main() -> None:
     await repo.close()
     await channel.close()  # Close RabbitMQ channel when done
     await consume_task  # Ensure the consume task completes
+    await update_keydb_task  # Ensure the KeyDB update task completes
 
 
 if __name__ == "__main__":

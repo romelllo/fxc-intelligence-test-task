@@ -67,20 +67,10 @@ class DatabaseRepository:
             raise
 
     @with_retry()
-    async def get_historical_transactions_by_provider(self) -> dict[int, float]:
-        historical_transactions = await HistoricalTransaction.all()
-        historical_data_dict = {}
-
-        for transaction in historical_transactions:
-            provider_id = transaction.provider_id_id
-            if provider_id in historical_data_dict:
-                historical_data_dict[provider_id] += float(
-                    transaction.transaction_value
-                )
-            else:
-                historical_data_dict[provider_id] = float(transaction.transaction_value)
-
-        return historical_data_dict
+    async def get_new_historical_transactions(
+        self, last_processed_id: int
+    ) -> list[HistoricalTransaction]:
+        return await HistoricalTransaction.filter(id__gt=last_processed_id).all()
 
     @with_retry()
     async def close(self) -> None:
