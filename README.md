@@ -1,4 +1,4 @@
-# FXC Intelligence Technical Task
+# Transaction Synchronizer
 
 ## Description
 
