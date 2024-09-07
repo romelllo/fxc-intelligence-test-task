@@ -1,6 +1,6 @@
 services:
   postgres:
-    container_name: fxc_db
+    container_name: transaction_db
     image: postgres:14
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
@@ -11,10 +11,10 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - fxc_network
+      - transaction_network
 
   rabbitmq:
-    container_name: fxc_rabbitmq
+    container_name: transaction_rabbitmq
     image: rabbitmq:3-management
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
@@ -25,10 +25,10 @@ services:
       - "5672:5672"
       - "15672:15672"
     networks:
-      - fxc_network
+      - transaction_network
 
   keydb:
-    container_name: fxc_keydb
+    container_name: transaction_keydb
     image: eqalpha/keydb:latest
     command: keydb-server --appendonly yes
     volumes:
@@ -36,22 +36,22 @@ services:
     ports:
       - "6379:6379"
     networks:
-      - fxc_network
+      - transaction_network
 
   app:
-    container_name: fxc_app
+    container_name: transaction_app
     build:
       context: .
     env_file:
       - .env
     environment:
-      - PYTHONPATH=/opt/fxc_app
+      - PYTHONPATH=/opt/transaction_app
     depends_on:
       - postgres
       - rabbitmq
       - keydb
     networks:
-      - fxc_network
+      - transaction_network
 
 networks:
-  fxc_network:
+  transaction_network:

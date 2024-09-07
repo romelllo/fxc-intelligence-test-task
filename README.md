@@ -24,8 +24,8 @@ This project is a data processing application that integrates PostgreSQL, Rabbit
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/romelllo/fxc-intelligence-test-task.git
-   cd fxc-intelligence-test-task
+   git clone https://github.com/romelllo/transaction-synchronizer.git
+   cd transaction-synchronizer
    ```
 
 2. **Create and Configure the `.env` File**
